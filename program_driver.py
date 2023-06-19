@@ -1,5 +1,7 @@
-import sqlite3
 from flask import Flask, render_template
+import sqlite3
+
+app = Flask(__name__)
 
 def create_sqlite_conn():
     conn = sqlite3.connect('database.db')
@@ -22,27 +24,13 @@ def db_execute_select(conn, query, params=None):
     rows = cursor.fetchall()
     return rows
 
-def main():
-    conn = create_sqlite_conn()
-    db_execute_ddl_dml(conn, "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)")
-    db_execute_ddl_dml(conn, "INSERT INTO users (username, password) VALUES (?, ?)", ('john', 'password123'))
-    result = db_execute_select(conn, "SELECT * FROM users")
-    for row in result:
-        print(row)
-
-    conn.close()
-
-
-
-app = Flask(__name__)
-
 @app.route('/')
 def home():
-    return render_template('index.html')
+    conn = create_sqlite_conn()
+    result = db_execute_select(conn, "SELECT * FROM users")
+    conn.close()
+    return render_template('data_render.html', data=result)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5001)
 
-
-if __name__ == "__main__":
-    main()
